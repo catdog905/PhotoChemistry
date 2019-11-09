@@ -19,8 +19,8 @@ public class SolutionChemicalEquations {
         //for (int i = 0; i < input.length; i++){
             //Log.i(TAG, "!" + input[i]);
         //}
-        List<Integer> inputInt= CompoundToInt(input, (new DbCursors(context)).getCursor("compound"));
-        List<Compound> inputCompounds = new ArrayList<Compound>();
+        List<Integer> inputInt = CompoundToInt(input, (new DbCursors(context)).getCursor("compound")); // id соединений
+        List<Compound> inputCompounds = new ArrayList<Compound>(); // объекты соединений
         for (Integer s: inputInt) {
             inputCompounds.add(new Compound(s, context));
          }
