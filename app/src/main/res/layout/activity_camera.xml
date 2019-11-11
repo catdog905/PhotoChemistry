@@ -3,22 +3,46 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+
     <FrameLayout
         android:id="@+id/lab04_fl_camera"
         android:layout_width="match_parent"
-        android:text="B1"
+        android:layout_height="1dp"
         android:layout_weight="7"
-        android:layout_height="1dp" />
+        android:text="B1">
 
+    </FrameLayout>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/editText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text="1" />
+
+        <EditText
+            android:id="@+id/editText2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="7"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text="1" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/lab04_bt_imagem_capturar"
         android:layout_width="match_parent"
+        android:layout_height="1dp"
         android:layout_weight="1"
-        android:text="photo"
-        android:layout_height="1dp" />
-
+        android:text="photo" />
 
 
 </LinearLayout>

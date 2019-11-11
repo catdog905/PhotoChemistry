@@ -14,6 +14,7 @@ import java.security.Permission;
 
 public class CalculatorActivity extends AppCompatActivity {
 
+    static{ System.loadLibrary("opencv_java3"); }
     EditText input_text;
     TextView output_text;
     Button solve_button;
