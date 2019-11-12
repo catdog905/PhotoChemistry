@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -17,6 +18,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.MediaController;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -34,10 +36,11 @@ import static android.provider.MediaStore.Images.Media.*;
 public class CameraActivity extends AppCompatActivity {
     static{ System.loadLibrary("opencv_java3"); }
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
-
-
-    EditText editText;
-    EditText editText2;
+    public final static String TAG_EQUATION = "com.example.myapplication.equations";
+    String str = "";
+    Classifier classifier;
+    ArrayList<String> outputs = new ArrayList<String>();;
+    TextView textView;
     private Button bt_image;
     private FrameLayout fl_camera;
     private Uri fileUri;
@@ -67,14 +70,13 @@ public class CameraActivity extends AppCompatActivity {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Log.d("Opencan", "Yes");
         setContentView(R.layout.activity_camera);
-
+        classifier = new Classifier(Utils.assetFilePath(getApplicationContext(),"model.pt"));
         takePicture();
         bt_image = findViewById(R.id.lab04_bt_imagem_capturar);
         fl_camera = findViewById(R.id.lab04_fl_camera);
-        editText = findViewById(R.id.editText);
-        editText2 = findViewById(R.id.editText2);
+        textView = findViewById(R.id.textView);
 
         View.OnClickListener listener = new View.OnClickListener() {
             @Override
@@ -85,12 +87,10 @@ public class CameraActivity extends AppCompatActivity {
         View.OnClickListener button_listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ImageView ivDATA = new ImageView(getApplicationContext());
-                ImageProcessing imageProcessing = new ImageProcessing(bitmap);
-                bitmap = imageProcessing.imagePreProcessing(bitmap, Integer.parseInt(editText.getText().toString()), Integer.parseInt(editText2.getText().toString()));
-                ArrayList<Mat> symbols = imageProcessing.getSymbols();
-                ivDATA.setImageBitmap(bitmap);
-                fl_camera.addView(ivDATA);
+                Intent answerIntent = new Intent();
+                answerIntent.putExtra(TAG_EQUATION, str);
+                setResult(RESULT_OK, answerIntent);
+                finish();
             }
         };
 
@@ -100,6 +100,9 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void takePicture(){
+        if (fl_camera != null)
+            fl_camera.removeAllViews();
+        str = "";
         Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         fileUri = MediaHelper.getOutputMediaImageFileUri(getBaseContext());
@@ -120,25 +123,30 @@ public class CameraActivity extends AppCompatActivity {
 
             case RESULT_OK:
 
-                ImageView ivDATA = new ImageView(this);
-                try {
-                    if (Build.VERSION.SDK_INT < 28) {
-                        bitmap = getBitmap(this.getContentResolver(), fileUri);
-                    } else {
-                        Source source = createSource(this.getContentResolver(), fileUri);
-                        bitmap = decodeBitmap(source);
+                switch (requestCode) {
+                    case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
+                    ImageView ivDATA = new ImageView(this);
+                    try {
+                        if (Build.VERSION.SDK_INT < 28) {
+                            bitmap = getBitmap(this.getContentResolver(), fileUri);
+                        } else {
+                            Source source = createSource(this.getContentResolver(), fileUri);
+                            bitmap = decodeBitmap(source);
+                        }
+                        ivDATA.setImageBitmap(bitmap);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                    //ImageProcessing imageProcessing = new ImageProcessing(bitmap);
-                    //bitmap = imageProcessing.imagePreProcessing(bitmap);
-                    ivDATA.setImageBitmap(bitmap);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    ImageProcessing imageProcessing = new ImageProcessing(bitmap);
+                    bitmap = imageProcessing.imagePreProcessing(bitmap);
+                    outputs = imageProcessing.imageClassification(getApplicationContext());
+                    for (String symbol : outputs) {
+                        str += symbol;
+                    }
+                    textView.setText(str);
+                    fl_camera.addView(ivDATA);
+                    break;
                 }
-
-
-                fl_camera.addView(ivDATA);
-                break;
-
 
         }
     }

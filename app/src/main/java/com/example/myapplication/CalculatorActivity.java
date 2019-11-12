@@ -2,19 +2,20 @@ package com.example.myapplication;
 
 import android.Manifest;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.security.Permission;
+import static com.example.myapplication.CameraActivity.TAG_EQUATION;
 
 public class CalculatorActivity extends AppCompatActivity {
 
     static{ System.loadLibrary("opencv_java3"); }
+    static final int CAMERA = 10;
     EditText input_text;
     TextView output_text;
     Button solve_button;
@@ -56,7 +57,7 @@ public class CalculatorActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(CalculatorActivity.this, CameraActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, CAMERA);
             }
         };
 
@@ -69,5 +70,20 @@ public class CalculatorActivity extends AppCompatActivity {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA,
         }, 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+        if (requestCode == CAMERA) {
+            if (resultCode == RESULT_OK) {
+                String str = data.getStringExtra(TAG_EQUATION);
+                input_text.setText(str);
+            }else {
+                input_text.setText(""); // стираем текст
+            }
+        }
     }
 }

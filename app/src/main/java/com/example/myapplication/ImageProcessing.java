@@ -1,6 +1,14 @@
 package com.example.myapplication;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.SparseArray;
+
+import com.google.android.gms.vision.Frame;
+import com.google.android.gms.vision.text.TextBlock;
+import com.google.android.gms.vision.text.TextRecognizer;
 
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
@@ -11,6 +19,10 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.pytorch.IValue;
+import org.pytorch.Module;
+import org.pytorch.Tensor;
+import org.pytorch.torchvision.TensorImageUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,12 +39,14 @@ public class ImageProcessing {
     }
     ArrayList<Mat> symbols;
     private Bitmap bitmap;
+    Bitmap bitmap_old;
 
     public ImageProcessing(Bitmap bitmap) {
         this.bitmap = bitmap;
     }
 
-    public Bitmap imagePreProcessing(Bitmap bitmap, int bS, int C) {
+    public Bitmap imagePreProcessing(Bitmap bitmap) {
+        bitmap_old = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         Mat mat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8UC4);
         Bitmap bmp32 = bitmap.copy(Bitmap.Config.RGB_565, true);
         Utils.bitmapToMat(bmp32, mat);
@@ -42,7 +56,7 @@ public class ImageProcessing {
         Mat gBMat = new Mat();
         Mat aTMat = new Mat();
         Imgproc.GaussianBlur(grayMat, gBMat, new Size(19, 19), 2, 2);
-        Imgproc.adaptiveThreshold(gBMat, aTMat, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, bS, C);
+        Imgproc.adaptiveThreshold(gBMat, aTMat, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 15, 2);
 
         List<org.opencv.core.MatOfPoint> contours = new ArrayList<org.opencv.core.MatOfPoint>();
         Mat hierarchy = new Mat();
@@ -59,17 +73,36 @@ public class ImageProcessing {
             Imgproc.rectangle(aTMat, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0, 255), 5);
         }
 
-        //Rect rect_min = new Rect();
-        //rect_min = contoursImgproc.boundingRect(contours.get(i));
-
-        //Mat result = original.submat(rect_min);
-
         Bitmap frame = Bitmap.createBitmap(aTMat.width(), aTMat.height(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(aTMat, frame);
         return frame;
     }
 
-    public ArrayList<Mat> getSymbols() {
-        return symbols;
+    public ArrayList<String> imageClassification(Context context) {
+        TextRecognizer textRecognizer = new TextRecognizer.Builder(context).build();
+
+        ArrayList<String> outputs = new ArrayList<String>();
+        //for (Mat symbol : symbols) {
+
+            if (!textRecognizer.isOperational()) {
+                new AlertDialog.Builder(context)
+                        .setMessage("Text recognizer could not be set up on your device :(")
+                        .show();
+                return outputs;
+            }
+
+            Frame frame = new Frame.Builder().setBitmap(bitmap_old).build();
+            SparseArray<TextBlock> text = textRecognizer.detect(frame);
+
+            for (int i = 0; i < text.size(); ++i) {
+                TextBlock item = text.valueAt(i);
+                if (item != null && item.getValue() != null) {
+                    outputs.add(item.getValue());
+                }
+            }
+       // }
+        return outputs;
     }
+
+
 }
