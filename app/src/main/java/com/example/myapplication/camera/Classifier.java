@@ -1,6 +1,8 @@
-package com.example.myapplication;
+package com.example.myapplication.camera;
 
 import android.graphics.Bitmap;
+
+import com.example.myapplication.helpers.Constants;
 
 import org.pytorch.IValue;
 import org.pytorch.Module;
@@ -61,8 +63,7 @@ public class Classifier {
 
         int classIndex = argMax(scores);
 
-        return Constants.IMAGENET_CLASSES[classIndex];
+        return Constants.CLASSES[classIndex];
 
     }
-
 }

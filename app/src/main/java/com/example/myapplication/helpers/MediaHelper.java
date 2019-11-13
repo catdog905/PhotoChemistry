@@ -10,7 +10,7 @@
  *
  */
 
-package com.example.myapplication;
+package com.example.myapplication.helpers;
 
 import android.content.Context;
 import android.net.Uri;
@@ -21,8 +21,13 @@ import android.support.v4.content.FileProvider;
 import android.util.Log;
 
 
+import com.example.myapplication.BuildConfig;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -76,15 +81,10 @@ public final class MediaHelper {
         return mediaFile;
     }
 
-    public static Uri getOutputMediaVideoFileUri(Context context) {
-        return getUri(context, TYPE_VIDEO);
-    }
-
     public static Uri getOutputMediaImageFileUri(Context context) {
         return getUri(context, TYPE_IMAGE);
     }
 
-    //finalidade de separar o tipo de chamada, pela versão do android no dispositivo:
     private static Uri getUri(Context context, int type) {
         Uri uri;
         uri = getUriFrom(context, getOutputMediaFile(type, context));
@@ -100,4 +100,22 @@ public final class MediaHelper {
         return BuildConfig.APPLICATION_ID + ".provider";
     }
 
+    public static String assetFilePath(Context context, String assetName) {
+        File file = new File(context.getFilesDir(), assetName);
+
+        try (InputStream is = context.getAssets().open(assetName)) {
+            try (OutputStream os = new FileOutputStream(file)) {
+                byte[] buffer = new byte[4 * 1024];
+                int read;
+                while ((read = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, read);
+                }
+                os.flush();
+            }
+            return file.getAbsolutePath();
+        } catch (IOException e) {
+            Log.e("pytorchandroid", "Error process asset " + assetName + " to file path");
+        }
+        return null;
+    }
 }

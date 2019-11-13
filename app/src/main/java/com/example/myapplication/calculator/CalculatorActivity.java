@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.calculator;
 
 import android.Manifest;
 import android.content.Intent;
@@ -10,7 +10,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import static com.example.myapplication.CameraActivity.TAG_EQUATION;
+import com.example.myapplication.camera.CameraActivity;
+import com.example.myapplication.R;
+import com.example.myapplication.helpers.DbCursors;
+
+import static com.example.myapplication.camera.CameraActivity.TAG_EQUATION;
 
 public class CalculatorActivity extends AppCompatActivity {
 

@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.camera;
 
 import android.app.AlertDialog;
 import android.content.Context;

@@ -1,12 +1,13 @@
-package com.example.myapplication;
+package com.example.myapplication.calculator;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
+import com.example.myapplication.helpers.DbCursors;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;

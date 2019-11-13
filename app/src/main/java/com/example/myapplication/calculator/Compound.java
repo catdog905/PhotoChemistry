@@ -1,10 +1,10 @@
-package com.example.myapplication;
+package com.example.myapplication.calculator;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.util.Log;
 
-import java.lang.reflect.Array;
+import com.example.myapplication.helpers.DbCursors;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +32,4 @@ public class Compound {
             }
         } while (cursor.moveToNext());
     }
-
-
 }

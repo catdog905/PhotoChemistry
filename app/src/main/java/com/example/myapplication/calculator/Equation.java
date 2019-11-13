@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.calculator;
 
 import java.util.ArrayList;
 import java.util.List;

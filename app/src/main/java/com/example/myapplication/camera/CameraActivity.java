@@ -1,31 +1,28 @@
-package com.example.myapplication;
+package com.example.myapplication.camera;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.VideoView;
+
+import com.example.myapplication.helpers.MediaHelper;
+import com.example.myapplication.R;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Mat;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,6 +34,7 @@ public class CameraActivity extends AppCompatActivity {
     static{ System.loadLibrary("opencv_java3"); }
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     public final static String TAG_EQUATION = "com.example.myapplication.equations";
+    public static final int PIC_CROP = 2;
     String str = "";
     Classifier classifier;
     ArrayList<String> outputs = new ArrayList<String>();;
@@ -72,7 +70,7 @@ public class CameraActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.d("Opencan", "Yes");
         setContentView(R.layout.activity_camera);
-        classifier = new Classifier(Utils.assetFilePath(getApplicationContext(),"model.pt"));
+        //classifier = new Classifier(MediaHelper.assetFilePath(getApplicationContext(),"model.pt"));
         takePicture();
         bt_image = findViewById(R.id.lab04_bt_imagem_capturar);
         fl_camera = findViewById(R.id.lab04_fl_camera);
@@ -123,8 +121,7 @@ public class CameraActivity extends AppCompatActivity {
 
             case RESULT_OK:
 
-                switch (requestCode) {
-                    case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
+                if(requestCode ==CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
                     ImageView ivDATA = new ImageView(this);
                     try {
                         if (Build.VERSION.SDK_INT < 28) {
@@ -137,6 +134,8 @@ public class CameraActivity extends AppCompatActivity {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    //if(fileUri != null)
+                    //cropImage();
                     ImageProcessing imageProcessing = new ImageProcessing(bitmap);
                     bitmap = imageProcessing.imagePreProcessing(bitmap);
                     outputs = imageProcessing.imageClassification(getApplicationContext());
@@ -145,10 +144,55 @@ public class CameraActivity extends AppCompatActivity {
                     }
                     textView.setText(str);
                     fl_camera.addView(ivDATA);
-                    break;
+                }else if(requestCode == PIC_CROP){//get the returned data
+                    Bundle extras = data.getExtras();
+                    bitmap = extras.getParcelable("data");
                 }
 
         }
+    }
+
+
+    private void cropImage(){
+        try {
+            Intent cropIntent = new Intent("com.android.camera.action.CROP");
+            //indicate image type and Uri
+            cropIntent.setDataAndType(fileUri, "image/*");
+            //set crop properties
+            cropIntent.putExtra("crop", "true");
+            //indicate aspect of desired crop
+            cropIntent.putExtra("aspectX", 1);
+            cropIntent.putExtra("aspectY", 1);
+            //indicate output X and Y
+            cropIntent.putExtra("outputX", 256);
+            cropIntent.putExtra("outputY", 256);
+            //retrieve data on return
+            cropIntent.putExtra("return-data", true);
+            //start the activity - we handle returning in onActivityResult
+            startActivityForResult(cropIntent, PIC_CROP);
+        }
+        catch(ActivityNotFoundException anfe){
+            //display an error message
+            String errorMessage = "Your device doesn't support the crop action!";
+            Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT);
+            toast.show();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelable("fileUri", fileUri);
+    }
+
+    // Recover the saved state when the activity is recreated.
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        fileUri= savedInstanceState.getParcelable("fileUri");
+
     }
 }
 

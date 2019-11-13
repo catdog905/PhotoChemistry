@@ -1,9 +1,10 @@
-package com.example.myapplication;
+package com.example.myapplication.helpers;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+
+import com.example.myapplication.helpers.DataBaseHelper;
 
 public class DbCursors {
     SQLiteDatabase db;
