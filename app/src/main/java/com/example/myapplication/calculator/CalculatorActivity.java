@@ -2,6 +2,8 @@ package com.example.myapplication.calculator;
 
 import android.Manifest;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -10,14 +12,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.example.myapplication.camera.CameraActivity;
 import com.example.myapplication.R;
+import com.example.myapplication.camera.CameraActivity;
+import com.example.myapplication.camera.ImageProcessing;
 import com.example.myapplication.helpers.DbCursors;
 
-import static com.example.myapplication.camera.CameraActivity.TAG_EQUATION;
+import java.io.File;
+import java.util.ArrayList;
 
 public class CalculatorActivity extends AppCompatActivity {
-
+    String TAG_EQUATION = "100";
     static{ System.loadLibrary("opencv_java3"); }
     static final int CAMERA = 10;
     EditText input_text;
@@ -25,6 +29,8 @@ public class CalculatorActivity extends AppCompatActivity {
     Button solve_button;
     Button image_button;
     String input;
+    String str = "";
+    String mFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +42,22 @@ public class CalculatorActivity extends AppCompatActivity {
         solve_button = findViewById(R.id.solve_button);
         image_button = findViewById(R.id.image_button);
 
+        Bundle arguments = getIntent().getExtras();
+        mFile = arguments.get("file").toString();
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        Bitmap bitmap = BitmapFactory.decodeFile(mFile, options);
+        ImageProcessing imageProcessing = new ImageProcessing(bitmap);
+        bitmap = imageProcessing.imagePreProcessing(bitmap);
+        ArrayList<String> outputs = imageProcessing.imageClassification(getApplicationContext());
+        for (String symbol : outputs) {
+            str += symbol;
+        }
+        input_text.setText(str);
+
         View.OnClickListener solveTask = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 input = input_text.getText().toString(); //ввод
                 input = input.replaceAll("[,.\\ ]", "");
                 SolutionChemicalEquations test = new SolutionChemicalEquations(input.split("\\+"), getApplicationContext()); // соединения
@@ -66,7 +85,7 @@ public class CalculatorActivity extends AppCompatActivity {
         };
 
         solve_button.setOnClickListener(solveTask);
-        image_button.setOnClickListener(takePhoto);
+        //image_button.setOnClickListener(takePhoto);
     }
 
     private void setPermissions() {
