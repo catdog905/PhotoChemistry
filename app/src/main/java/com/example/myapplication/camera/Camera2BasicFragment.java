@@ -68,7 +68,7 @@ import com.example.myapplication.R;
 import com.example.myapplication.calculator.CalculatorActivity;
 
 
-
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -246,7 +246,12 @@ public class Camera2BasicFragment extends Fragment
      * This is the output file for our picture.
      */
     private File mFile;
-
+    private static byte[] convertBitmapToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream(bitmap.getWidth() *
+                bitmap.getHeight());
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
+    }
     /**
      * This a callback object for the {@link ImageReader}. "onImageAvailable" will be called when a
      * still image is ready to be saved.
@@ -256,7 +261,16 @@ public class Camera2BasicFragment extends Fragment
 
         @Override
         public void onImageAvailable(ImageReader reader) {
-            mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
+
+            Image image = reader.acquireLatestImage();
+            ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+            byte[] bytes = new byte[buffer.capacity()];
+            buffer.get(bytes);
+            Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
+            Matrix matrix = new Matrix();
+            matrix.postScale(0.5f, 0.5f);
+            bitmapImage = Bitmap.createBitmap(bitmapImage, 0, 0,bitmapImage.getWidth(), bitmapImage.getHeight()/2, matrix, true);
+            mBackgroundHandler.post(new ImageSaver(bitmapImage, mFile));
             showToast("Saved: " + mFile);
 
         }
@@ -589,11 +603,11 @@ public class Camera2BasicFragment extends Fragment
                 // We fit the aspect ratio of TextureView to the size of preview we picked.
                 int orientation = getResources().getConfiguration().orientation;
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    mTextureView.setAspectRatio(
-                            mPreviewSize.getWidth(), mPreviewSize.getHeight());
-                } else {
-                    mTextureView.setAspectRatio(
-                            mPreviewSize.getHeight(), mPreviewSize.getWidth());
+                    mTextureView.setAspectRatio( Integer.parseInt(mPreviewSize.toString()) * 3 / 4, Integer.parseInt(mPreviewSize.toString()) );
+                    //                            //mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                //} else {
+                //    mTextureView.setAspectRatio( 20000, 10);
+                //            //mPreviewSize.getHeight(), mPreviewSize.getWidth());
                 }
 
                 // Check if the flash is supported.
@@ -943,13 +957,13 @@ public class Camera2BasicFragment extends Fragment
         /**
          * The JPEG image
          */
-        private final Image mImage;
+        private Bitmap mImage;
         /**
          * The file we save the image into.
          */
         private final File mFile;
 
-        ImageSaver(Image image, File file) {
+        ImageSaver(Bitmap image, File file) {
             mImage = image;
             mFile = file;
         }
@@ -958,9 +972,9 @@ public class Camera2BasicFragment extends Fragment
         public void run() {
 
 
-            ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
-            byte[] bytes = new byte[buffer.remaining()];
-            buffer.get(bytes);
+            //ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
+            byte[] bytes = convertBitmapToByteArray(mImage);//new byte[buffer.remaining()];
+            //buffer.get(bytes);
             FileOutputStream output = null;
             try {
                 output = new FileOutputStream(mFile);
@@ -968,7 +982,7 @@ public class Camera2BasicFragment extends Fragment
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                mImage.close();
+                //mImage.close();
                 if (null != output) {
                     try {
                         output.close();

@@ -18,6 +18,7 @@ package com.example.myapplication.camera;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.TextureView;
 
 /**
@@ -27,6 +28,7 @@ public class AutoFitTextureView extends TextureView {
 
     private int mRatioWidth = 0;
     private int mRatioHeight = 0;
+    private static final String TAG = "Auto";
 
     public AutoFitTextureView(Context context) {
         this(context, null);
@@ -62,7 +64,7 @@ public class AutoFitTextureView extends TextureView {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
-        if (0 == mRatioWidth || 0 == mRatioHeight) {
+        /*if (0 == mRatioWidth || 0 == mRatioHeight) {
             setMeasuredDimension(width, height);
         } else {
             if (width < height * mRatioWidth / mRatioHeight) {
@@ -70,7 +72,10 @@ public class AutoFitTextureView extends TextureView {
             } else {
                 setMeasuredDimension(height * mRatioWidth / mRatioHeight, height);
             }
-        }
+        }*/
+        setMeasuredDimension(height*3/4, height);
+        Log.i(TAG, width + " " + height);
+        //setMeasuredDimension(mRatioWidth, mRatioHeight);
     }
 
 }
