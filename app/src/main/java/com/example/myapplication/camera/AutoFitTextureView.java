@@ -26,9 +26,13 @@ import android.view.TextureView;
  */
 public class AutoFitTextureView extends TextureView {
 
+    private static final String TAG = "Auto";
+
     private int mRatioWidth = 0;
     private int mRatioHeight = 0;
-    private static final String TAG = "Auto";
+
+    private double firstWidth = -1;
+    private double firstHeight = -1;
 
     public AutoFitTextureView(Context context) {
         this(context, null);
@@ -61,21 +65,40 @@ public class AutoFitTextureView extends TextureView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
-        /*if (0 == mRatioWidth || 0 == mRatioHeight) {
+        if(firstWidth == -1 && firstHeight == -1) {
+            firstWidth = width;
+            firstHeight = height;
+        }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        if (0 == mRatioWidth || 0 == mRatioHeight) {
             setMeasuredDimension(width, height);
         } else {
-            if (width < height * mRatioWidth / mRatioHeight) {
-                setMeasuredDimension(width, width * mRatioHeight / mRatioWidth);
-            } else {
-                setMeasuredDimension(height * mRatioWidth / mRatioHeight, height);
-            }
-        }*/
-        setMeasuredDimension(height*3/4, height);
-        Log.i(TAG, width + " " + height);
-        //setMeasuredDimension(mRatioWidth, mRatioHeight);
+            setMeasuredDimension(width * height / mRatioHeight, height);
+            //if (width < height * mRatioWidth / mRatioHeight) {
+            //    setMeasuredDimension(width, width * mRatioHeight / mRatioWidth);
+            //} else {
+            //    setMeasuredDimension(height * mRatioWidth / mRatioHeight, height);
+            //}
+            Log.i(TAG, height + " " + width);
+        }
     }
 
+    public int getMRatioHeight() {
+        return mRatioHeight;
+    }
+
+    public int getMRatioWidth() {
+        return mRatioWidth;
+    }
+
+
+    public double getFirstWidth() {
+        return firstWidth;
+    }
+
+    public double getFirstHeight() {
+        return firstHeight;
+    }
 }

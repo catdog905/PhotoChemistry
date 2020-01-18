@@ -268,9 +268,11 @@ public class Camera2BasicFragment extends Fragment
             buffer.get(bytes);
             Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
             Matrix matrix = new Matrix();
-            matrix.postScale(0.5f, 0.5f);
-            bitmapImage = Bitmap.createBitmap(bitmapImage, 0, 0,bitmapImage.getWidth(), bitmapImage.getHeight()/2, matrix, true);
+            //matrix.postScale(0.5f, 0.5f);
+
+            bitmapImage = Bitmap.createBitmap(bitmapImage, 0, 0, (int)(bitmapImage.getHeight()/mTextureView.getFirstHeight()*mTextureView.getFirstWidth()), bitmapImage.getHeight(), matrix, true);
             mBackgroundHandler.post(new ImageSaver(bitmapImage, mFile));
+            image.close();
             showToast("Saved: " + mFile);
 
         }
@@ -603,11 +605,11 @@ public class Camera2BasicFragment extends Fragment
                 // We fit the aspect ratio of TextureView to the size of preview we picked.
                 int orientation = getResources().getConfiguration().orientation;
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    mTextureView.setAspectRatio( Integer.parseInt(mPreviewSize.toString()) * 3 / 4, Integer.parseInt(mPreviewSize.toString()) );
-                    //                            //mPreviewSize.getWidth(), mPreviewSize.getHeight());
-                //} else {
-                //    mTextureView.setAspectRatio( 20000, 10);
-                //            //mPreviewSize.getHeight(), mPreviewSize.getWidth());
+                    mTextureView.setAspectRatio(
+                            mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                } else {
+                    mTextureView.setAspectRatio(
+                            mPreviewSize.getHeight(), mPreviewSize.getWidth());
                 }
 
                 // Check if the flash is supported.
