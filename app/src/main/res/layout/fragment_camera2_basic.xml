@@ -11,6 +11,11 @@
         android:layout_alignParentTop="true"
         android:layout_marginStart="0dp" />
 
+    <!---<SurfaceView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/surfaceView"/>-->
+
     <FrameLayout
         android:id="@+id/control"
         android:layout_width="match_parent"
@@ -41,5 +46,12 @@
             android:text="solve" />
 
     </FrameLayout>
+
+    <RelativeLayout
+        android:id="@+id/relative_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </RelativeLayout>
 
 </RelativeLayout>

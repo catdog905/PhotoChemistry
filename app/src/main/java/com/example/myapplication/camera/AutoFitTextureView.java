@@ -17,9 +17,16 @@
 package com.example.myapplication.camera;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.TextureView;
+
+import com.example.myapplication.R;
 
 /**
  * A {@link TextureView} that can be adjusted to a specified aspect ratio.
@@ -101,4 +108,6 @@ public class AutoFitTextureView extends TextureView {
     public double getFirstHeight() {
         return firstHeight;
     }
+
+
 }

@@ -27,12 +27,19 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.Drawable;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -49,18 +56,25 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -87,6 +101,8 @@ public class Camera2BasicFragment extends Fragment
     private static final int RESULT_OK = 1;
     TextView textView;
 
+    SurfaceView surfaceView;
+    SurfaceHolder mHolder;
     /**
      * Conversion from screen rotation to JPEG orientation.
      */
@@ -100,6 +116,8 @@ public class Camera2BasicFragment extends Fragment
         ORIENTATIONS.append(Surface.ROTATION_180, 270);
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
+
+
 
     /**
      * Tag for the {@link Log}.
@@ -425,7 +443,7 @@ public class Camera2BasicFragment extends Fragment
             if (option.getWidth() <= maxWidth && option.getHeight() <= maxHeight &&
                     option.getHeight() == option.getWidth() * h / w) {
                 if (option.getWidth() >= textureViewWidth &&
-                    option.getHeight() >= textureViewHeight) {
+                        option.getHeight() >= textureViewHeight) {
                     bigEnough.add(option);
                 } else {
                     notBigEnough.add(option);
@@ -445,16 +463,119 @@ public class Camera2BasicFragment extends Fragment
         }
     }
 
+
     public static Camera2BasicFragment newInstance() {
         return new Camera2BasicFragment();
+    }
+
+    private static final int INVALID_POINTER_ID = -1;
+
+    private Drawable mImage;
+    private float mPosX;
+    private float mPosY;
+
+    private float mLastTouchX;
+    private float mLastTouchY;
+    private int mActivePointerId = INVALID_POINTER_ID;
+
+    private ScaleGestureDetector mScaleDetector;
+    private float mScaleFactor = 1.f;
+
+
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            mScaleFactor *= detector.getScaleFactor();
+
+            // Don't let the object get too small or too large.
+            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 10.0f));
+            //rect.render_rect(mScaleFactor);
+
+            rect.render_rect(mScaleFactor);
+
+
+            return true;
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_camera2_basic, container, false);
-    }
+        View view = inflater.inflate(R.layout.fragment_camera2_basic, container, false);
+        mScaleDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
+        view.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent ev) {
+                Log.d(TAG, "X: " + mPosX + " Y: " + mPosY + " Scale: " + mScaleFactor);
+                mScaleDetector.onTouchEvent(ev);
 
+                final int action = ev.getAction();
+                switch (action & MotionEvent.ACTION_MASK) {
+                    case MotionEvent.ACTION_DOWN: {
+                        final float x = ev.getX();
+                        final float y = ev.getY();
+
+                        mLastTouchX = x;
+                        mLastTouchY = y;
+                        mActivePointerId = ev.getPointerId(0);
+                        break;
+                    }
+
+                    case MotionEvent.ACTION_MOVE: {
+                        final int pointerIndex = ev.findPointerIndex(mActivePointerId);
+                        final float x = ev.getX(pointerIndex);
+                        final float y = ev.getY(pointerIndex);
+
+                        // Only move if the ScaleGestureDetector isn't processing a gesture.
+                        if (!mScaleDetector.isInProgress()) {
+                            final float dx = x - mLastTouchX;
+                            final float dy = y - mLastTouchY;
+
+                            mPosX += dx;
+                            mPosY += dy;
+                            //rect.render_rect(mScaleFactor);
+                            //relativeLayout.addView(new Rectangle(getActivity(), (int)mPosX, (int)mPosY, (int)mPosX*2, (int)mPosY*2));
+                        }
+
+                        mLastTouchX = x;
+                        mLastTouchY = y;
+
+                        break;
+                    }
+
+                    case MotionEvent.ACTION_UP: {
+                        mActivePointerId = INVALID_POINTER_ID;
+                        break;
+                    }
+
+                    case MotionEvent.ACTION_CANCEL: {
+                        mActivePointerId = INVALID_POINTER_ID;
+                        break;
+                    }
+
+                    case MotionEvent.ACTION_POINTER_UP: {
+                        final int pointerIndex = (ev.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK)
+                                >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+                        final int pointerId = ev.getPointerId(pointerIndex);
+                        if (pointerId == mActivePointerId) {
+                            // This was our active pointer going up. Choose a new
+                            // active pointer and adjust accordingly.
+                            final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
+                            mLastTouchX = ev.getX(newPointerIndex);
+                            mLastTouchY = ev.getY(newPointerIndex);
+                            mActivePointerId = ev.getPointerId(newPointerIndex);
+                        }
+                        break;
+                    }
+                }
+
+                return true;
+            }
+        });
+        return view;
+    }
+    Rectangle rect;
+    RelativeLayout relativeLayout;
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         view.findViewById(R.id.picture).setOnClickListener(this);
@@ -462,7 +583,16 @@ public class Camera2BasicFragment extends Fragment
         //view.findViewById(R.id.info).setOnClickListener(this);
         textView = view.findViewById(R.id.textView);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
+        relativeLayout = (RelativeLayout) view.findViewById(R.id.relative_layout);
+        rect = new Rectangle(getActivity(), 200, 200, 500, 500);
+        rect.render_rect(1);
+
+
+
+
+
     }
+
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -1072,6 +1202,41 @@ public class Camera2BasicFragment extends Fragment
                                 }
                             })
                     .create();
+        }
+    }
+
+    private class Rectangle extends View{
+        Paint paint = new Paint();
+        int x1, y1, x2, y2;
+
+        public Rectangle(Context context, int x1, int y1, int x2, int y2) {
+            super(context);
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+        }
+
+        @Override
+        public void onDraw(Canvas canvas) {
+            paint.setColor(Color.GREEN);
+            paint.setColor(Color.rgb(100, 20, 50));
+            paint.setStrokeWidth(10);
+            paint.setStyle(Paint.Style.STROKE);
+            Rect rect = new Rect(x1, y1, x2, y2);
+            canvas.drawRect(rect, paint );
+        }
+
+        public void setRect(int x1, int y1, int x2, int y2) {
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+        }
+        public void render_rect(float scale){
+            Log.d("DEBUG", "X: " + mPosX + " Y: " + mPosY + " Scale: " + mScaleFactor);
+            relativeLayout.removeAllViews();
+            relativeLayout.addView(new Rectangle(getActivity(), (int)(x1*scale), y1, x2, y2));
         }
     }
 
