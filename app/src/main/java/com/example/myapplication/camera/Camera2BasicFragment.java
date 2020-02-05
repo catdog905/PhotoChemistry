@@ -65,6 +65,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -288,7 +289,14 @@ public class Camera2BasicFragment extends Fragment
             Matrix matrix = new Matrix();
             //matrix.postScale(0.5f, 0.5f);
 
-            bitmapImage = Bitmap.createBitmap(bitmapImage, 0, 0, (int)(bitmapImage.getHeight()/mTextureView.getFirstHeight()*mTextureView.getFirstWidth()), bitmapImage.getHeight(), matrix, true);
+            Display display = getActivity().getWindowManager().getDefaultDisplay();
+            int width = display.getWidth();  // deprecated
+            int height = display.getHeight();  // deprecated
+            double delx = (bitmapImage.getHeight()/mTextureView.getFirstHeight()*mTextureView.getFirstWidth()) / width;
+            double dely = bitmapImage.getHeight()/ height;
+            Log.d("DEBUG", "X: " +(int)((rect.x2-rect.x1)*delx)+ " Y: " + dely + " Scale: " + mScaleFactor);
+            //bitmapImage = Bitmap.createBitmap(bitmapImage, 0, 0, (int)(bitmapImage.getHeight()/mTextureView.getFirstHeight()*mTextureView.getFirstWidth()), bitmapImage.getHeight(), matrix, true);
+            bitmapImage = Bitmap.createBitmap(bitmapImage, (int)(rect.x1*delx), (int)(rect.y1*dely), (int)((rect.x2-rect.x1)*delx), (int)((rect.y2-rect.y1)*dely), matrix, true);
             mBackgroundHandler.post(new ImageSaver(bitmapImage, mFile));
             image.close();
             showToast("Saved: " + mFile);
@@ -489,10 +497,10 @@ public class Camera2BasicFragment extends Fragment
             mScaleFactor *= detector.getScaleFactor();
 
             // Don't let the object get too small or too large.
-            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 10.0f));
+            //mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 10.0f));
             //rect.render_rect(mScaleFactor);
 
-            rect.render_rect(mScaleFactor);
+            //rect.render_rect(mScaleFactor);
 
 
             return true;
@@ -503,11 +511,11 @@ public class Camera2BasicFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_camera2_basic, container, false);
-        mScaleDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
+        //mScaleDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
         view.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent ev) {
                 Log.d(TAG, "X: " + mPosX + " Y: " + mPosY + " Scale: " + mScaleFactor);
-                mScaleDetector.onTouchEvent(ev);
+                //mScaleDetector.onTouchEvent(ev);
 
                 final int action = ev.getAction();
                 switch (action & MotionEvent.ACTION_MASK) {
@@ -527,15 +535,15 @@ public class Camera2BasicFragment extends Fragment
                         final float y = ev.getY(pointerIndex);
 
                         // Only move if the ScaleGestureDetector isn't processing a gesture.
-                        if (!mScaleDetector.isInProgress()) {
+                        //if (!mScaleDetector.isInProgress()) {
                             final float dx = x - mLastTouchX;
                             final float dy = y - mLastTouchY;
 
                             mPosX += dx;
                             mPosY += dy;
-                            //rect.render_rect(mScaleFactor);
+                            rect.render_rect(dx, dy);
                             //relativeLayout.addView(new Rectangle(getActivity(), (int)mPosX, (int)mPosY, (int)mPosX*2, (int)mPosY*2));
-                        }
+                        //}
 
                         mLastTouchX = x;
                         mLastTouchY = y;
@@ -584,8 +592,11 @@ public class Camera2BasicFragment extends Fragment
         textView = view.findViewById(R.id.textView);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
         relativeLayout = (RelativeLayout) view.findViewById(R.id.relative_layout);
-        rect = new Rectangle(getActivity(), 200, 200, 500, 500);
-        rect.render_rect(1);
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        int width = display.getWidth();  // deprecated
+        int height = display.getHeight();  // deprecated
+        rect = new Rectangle(getActivity(), width/2-200, height/2-200, width/2+200, height/2+200);
+        rect.render_rect(0, 0);
 
 
 
@@ -1207,7 +1218,7 @@ public class Camera2BasicFragment extends Fragment
 
     private class Rectangle extends View{
         Paint paint = new Paint();
-        int x1, y1, x2, y2;
+        float x1, y1, x2, y2, base_x, base_y, base_len_x, base_len_y;
 
         public Rectangle(Context context, int x1, int y1, int x2, int y2) {
             super(context);
@@ -1223,7 +1234,7 @@ public class Camera2BasicFragment extends Fragment
             paint.setColor(Color.rgb(100, 20, 50));
             paint.setStrokeWidth(10);
             paint.setStyle(Paint.Style.STROKE);
-            Rect rect = new Rect(x1, y1, x2, y2);
+            Rect rect = new Rect((int)x1, (int)y1, (int)x2, (int)y2);
             canvas.drawRect(rect, paint );
         }
 
@@ -1233,10 +1244,15 @@ public class Camera2BasicFragment extends Fragment
             this.x2 = x2;
             this.y2 = y2;
         }
-        public void render_rect(float scale){
+        public void render_rect(float dx, float dy){ //float scale){
             Log.d("DEBUG", "X: " + mPosX + " Y: " + mPosY + " Scale: " + mScaleFactor);
             relativeLayout.removeAllViews();
-            relativeLayout.addView(new Rectangle(getActivity(), (int)(x1*scale), y1, x2, y2));
+            //relativeLayout.addView(new Rectangle(getActivity(), (int)(base_x - base_len_x*scale),(int)(base_y - base_len_y*scale), (int)(base_x + base_len_x*scale), (int)(base_y + base_len_y*scale)));
+            x1 = (x1 - dx);
+            y1 = (y1 - dy);
+            x2 = (x2 + dx);
+            y2 = (y2 + dy);
+            relativeLayout.addView(new Rectangle(getActivity(), (int)x1, (int)y1, (int)x2, (int)y2));
         }
     }
 
