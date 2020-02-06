@@ -38,6 +38,8 @@ public class AutoFitTextureView extends TextureView {
     private int mRatioWidth = 0;
     private int mRatioHeight = 0;
 
+    public double newWidth = -1;
+    public double newHeight = -1;
     private double firstWidth = -1;
     private double firstHeight = -1;
 
@@ -82,6 +84,8 @@ public class AutoFitTextureView extends TextureView {
         if (0 == mRatioWidth || 0 == mRatioHeight) {
             setMeasuredDimension(width, height);
         } else {
+            newHeight= height;
+            newWidth = width;
             setMeasuredDimension(width * height / mRatioHeight, height);
             //if (width < height * mRatioWidth / mRatioHeight) {
             //    setMeasuredDimension(width, width * mRatioHeight / mRatioWidth);

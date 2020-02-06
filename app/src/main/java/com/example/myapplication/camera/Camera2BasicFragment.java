@@ -293,13 +293,13 @@ public class Camera2BasicFragment extends Fragment
             int width = display.getWidth();  // deprecated
             int height = display.getHeight();  // deprecated
             double delx = (bitmapImage.getHeight()/mTextureView.getFirstHeight()*mTextureView.getFirstWidth()) / width;
-            double dely = bitmapImage.getHeight()/ height;
-            Log.d("DEBUG", "X: " +(int)((rect.x2-rect.x1)*delx)+ " Y: " + dely + " Scale: " + mScaleFactor);
+            double dely = bitmapImage.getHeight()/ mTextureView.newHeight;
+            Log.d("DEBUG", "X: " +(rect.x1*delx)+ " Y: " + (rect.y1*dely) + " Scale: " + mScaleFactor);
             //bitmapImage = Bitmap.createBitmap(bitmapImage, 0, 0, (int)(bitmapImage.getHeight()/mTextureView.getFirstHeight()*mTextureView.getFirstWidth()), bitmapImage.getHeight(), matrix, true);
             bitmapImage = Bitmap.createBitmap(bitmapImage, (int)(rect.x1*delx), (int)(rect.y1*dely), (int)((rect.x2-rect.x1)*delx), (int)((rect.y2-rect.y1)*dely), matrix, true);
             mBackgroundHandler.post(new ImageSaver(bitmapImage, mFile));
             image.close();
-            showToast("Saved: " + mFile);
+            showToast("Successfully");
 
         }
 
@@ -589,7 +589,7 @@ public class Camera2BasicFragment extends Fragment
         view.findViewById(R.id.picture).setOnClickListener(this);
         view.findViewById(R.id.calculate).setOnClickListener(this);
         //view.findViewById(R.id.info).setOnClickListener(this);
-        textView = view.findViewById(R.id.textView);
+        //textView = view.findViewById(R.id.textView);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
         relativeLayout = (RelativeLayout) view.findViewById(R.id.relative_layout);
         Display display = getActivity().getWindowManager().getDefaultDisplay();

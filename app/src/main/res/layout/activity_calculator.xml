@@ -39,11 +39,4 @@
         android:text="Output"
         android:textSize="24sp" />
 
-    <Button
-        android:id="@+id/image_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Image"
-        android:textSize="24sp" />
-
 </LinearLayout>

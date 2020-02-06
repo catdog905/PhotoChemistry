@@ -77,6 +77,7 @@ public class SolutionChemicalEquations {
                 Equation tempEquation = new Equation(cursor.getInt(cursor.getColumnIndex("_id")), cursor.getInt(cursor.getColumnIndex("frequency")),
                         leftId, listTempIntRight);
                 possibleEquations.add(tempEquation);
+                //break;
             }
 
         } while (cursor.moveToNext());

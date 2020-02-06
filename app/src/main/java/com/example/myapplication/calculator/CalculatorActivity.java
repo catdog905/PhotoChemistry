@@ -27,7 +27,7 @@ public class CalculatorActivity extends AppCompatActivity {
     EditText input_text;
     TextView output_text;
     Button solve_button;
-    Button image_button;
+    //Button image_button;
     String input;
     String str = "";
     String mFile;
@@ -40,7 +40,7 @@ public class CalculatorActivity extends AppCompatActivity {
         input_text = findViewById(R.id.input);
         output_text = findViewById(R.id.output);
         solve_button = findViewById(R.id.solve_button);
-        image_button = findViewById(R.id.image_button);
+        //image_button = findViewById(R.id.image_button);
 
         Bundle arguments = getIntent().getExtras();
         mFile = arguments.get("file").toString();
@@ -52,6 +52,9 @@ public class CalculatorActivity extends AppCompatActivity {
         for (String symbol : outputs) {
             str += symbol;
         }
+
+        str = str.replaceAll("[0]", "o").replaceAll("[,.\\ ]", "").toLowerCase();
+        str = str.replaceAll("[^0-9A-Za-z()\\[]+]", "");
         input_text.setText(str);
 
         View.OnClickListener solveTask = new View.OnClickListener() {
@@ -60,17 +63,19 @@ public class CalculatorActivity extends AppCompatActivity {
 
                 input = input_text.getText().toString(); //ввод
                 input = input.replaceAll("[,.\\ ]", "");
+                input = input.replaceAll("[0]", "o");
                 SolutionChemicalEquations test = new SolutionChemicalEquations(input.split("\\+"), getApplicationContext()); // соединения
                 String output = "";
                 for (Equation eq : test.getSolutionEquations()) {
-                    output += eq.id + ": ";
+                    //output += eq.id + ": ";
                     for (Integer el: eq.getRight()) {
                         output += test.IntToCompound(el, (new DbCursors(getApplicationContext())).getCursor("compound")) + " ";
                         //Log.i(TAG, el + " " + "+");
                     }
-                    output += " :" + eq.frequency;
-                    output += "\n";
+                    //output += " :" + eq.frequency;
+                   // output += "\n";
                     //Log.i(TAG, (eq.getRight()).size() + "");
+                    break;
                 }
                 output_text.setText(output);
             }
