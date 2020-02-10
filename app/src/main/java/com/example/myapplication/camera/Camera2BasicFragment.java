@@ -52,6 +52,7 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -101,6 +102,7 @@ public class Camera2BasicFragment extends Fragment
 
     private static final int RESULT_OK = 1;
     TextView textView;
+    String str;
 
     SurfaceView surfaceView;
     SurfaceHolder mHolder;
@@ -282,24 +284,8 @@ public class Camera2BasicFragment extends Fragment
         public void onImageAvailable(ImageReader reader) {
 
             Image image = reader.acquireLatestImage();
-            ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-            byte[] bytes = new byte[buffer.capacity()];
-            buffer.get(bytes);
-            Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
-            Matrix matrix = new Matrix();
-            //matrix.postScale(0.5f, 0.5f);
-
-            Display display = getActivity().getWindowManager().getDefaultDisplay();
-            int width = display.getWidth();  // deprecated
-            int height = display.getHeight();  // deprecated
-            double delx = (bitmapImage.getHeight()/mTextureView.getFirstHeight()*mTextureView.getFirstWidth()) / width;
-            double dely = bitmapImage.getHeight()/ mTextureView.newHeight;
-            Log.d("DEBUG", "X: " +(rect.x1*delx)+ " Y: " + (rect.y1*dely) + " Scale: " + mScaleFactor);
-            //bitmapImage = Bitmap.createBitmap(bitmapImage, 0, 0, (int)(bitmapImage.getHeight()/mTextureView.getFirstHeight()*mTextureView.getFirstWidth()), bitmapImage.getHeight(), matrix, true);
-            bitmapImage = Bitmap.createBitmap(bitmapImage, (int)(rect.x1*delx), (int)(rect.y1*dely), (int)((rect.x2-rect.x1)*delx), (int)((rect.y2-rect.y1)*dely), matrix, true);
-            mBackgroundHandler.post(new ImageSaver(bitmapImage, mFile));
-            image.close();
-            showToast("Successfully");
+            ImageProcessor processor = new ImageProcessor();
+            processor.execute(image);
 
         }
 
@@ -588,8 +574,6 @@ public class Camera2BasicFragment extends Fragment
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         view.findViewById(R.id.picture).setOnClickListener(this);
         view.findViewById(R.id.calculate).setOnClickListener(this);
-        //view.findViewById(R.id.info).setOnClickListener(this);
-        //textView = view.findViewById(R.id.textView);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
         relativeLayout = (RelativeLayout) view.findViewById(R.id.relative_layout);
         Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -1077,7 +1061,7 @@ public class Camera2BasicFragment extends Fragment
             }
             case R.id.calculate: {
                 Intent intent = new Intent(getActivity().getApplicationContext(), CalculatorActivity.class);
-                intent.putExtra("file", mFile);
+                intent.putExtra("str", str);
                 startActivity(intent);
                 break;
             }
@@ -1091,56 +1075,55 @@ public class Camera2BasicFragment extends Fragment
         }
     }
 
-    /**
-     * Saves a JPEG {@link Image} into the specified {@link File}.
-     */
+    private class ImageProcessor extends AsyncTask<Image, Integer, String> {
+        @Override
+        protected String doInBackground(Image... parameter) {
+            Image image = parameter[0];
+            ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+            byte[] bytes = new byte[buffer.capacity()];
+            buffer.get(bytes);
+            Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
+            Matrix matrix = new Matrix();
 
-    private static class ImageSaver implements Runnable {
 
-        /**
-         * The JPEG image
-         */
-        private Bitmap mImage;
-        /**
-         * The file we save the image into.
-         */
-        private final File mFile;
+            Display display = getActivity().getWindowManager().getDefaultDisplay();
+            int width = display.getWidth();  // deprecated
+            int height = display.getHeight();  // deprecated
+            double delx = (bitmapImage.getHeight()/mTextureView.getFirstHeight()*mTextureView.getFirstWidth()) / width;
+            double dely = bitmapImage.getHeight()/ mTextureView.newHeight;
+            Log.d("DEBUG", "X: " +(rect.x1*delx)+ " Y: " + (rect.y1*dely) + " Scale: " + mScaleFactor);
+            //bitmapImage = Bitmap.createBitmap(bitmapImage, 0, 0, (int)(bitmapImage.getHeight()/mTextureView.getFirstHeight()*mTextureView.getFirstWidth()), bitmapImage.getHeight(), matrix, true);
+            bitmapImage = Bitmap.createBitmap(bitmapImage, (int)(rect.x1*delx), (int)(rect.y1*dely), (int)((rect.x2-rect.x1)*delx), (int)((rect.y2-rect.y1)*dely), matrix, true);
+            //mBackgroundHandler.post(new ImageSaver(bitmapImage, mFile));
+            image.close();
+            showToast("Successfully");
 
-        ImageSaver(Bitmap image, File file) {
-            mImage = image;
-            mFile = file;
+            String str = "";
+
+            ImageProcessing imageProcessing = new ImageProcessing(bitmapImage);
+            bitmapImage = imageProcessing.imagePreProcessing(bitmapImage);
+            ArrayList<String> outputs = imageProcessing.imageClassification(getActivity());
+            for (String symbol : outputs) {
+                str += symbol;
+            }
+
+            str = str.replaceAll("[0]", "o").replaceAll("[,.\\ ]", "").toLowerCase();
+            str = str.replaceAll("[^0-9A-Za-z()\\[\\]+]", "");
+            return str;
         }
 
         @Override
-        public void run() {
-
-
-            //ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
-            byte[] bytes = convertBitmapToByteArray(mImage);//new byte[buffer.remaining()];
-            //buffer.get(bytes);
-            FileOutputStream output = null;
-            try {
-                output = new FileOutputStream(mFile);
-                output.write(bytes);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                //mImage.close();
-                if (null != output) {
-                    try {
-                        output.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+        protected void onProgressUpdate(Integer... progress) {
+            // [... Обновите индикатор хода выполнения, уведомления или другой
+            // элемент пользовательского интерфейса ...]
         }
 
+        @Override
+        protected void onPostExecute(String result) {
+            str = result;
+        }
     }
 
-    /**
-     * Compares two {@code Size}s based on their areas.
-     */
     static class CompareSizesByArea implements Comparator<Size> {
 
         @Override

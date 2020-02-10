@@ -43,18 +43,7 @@ public class CalculatorActivity extends AppCompatActivity {
         //image_button = findViewById(R.id.image_button);
 
         Bundle arguments = getIntent().getExtras();
-        mFile = arguments.get("file").toString();
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        Bitmap bitmap = BitmapFactory.decodeFile(mFile, options);
-        ImageProcessing imageProcessing = new ImageProcessing(bitmap);
-        bitmap = imageProcessing.imagePreProcessing(bitmap);
-        ArrayList<String> outputs = imageProcessing.imageClassification(getApplicationContext());
-        for (String symbol : outputs) {
-            str += symbol;
-        }
-
-        str = str.replaceAll("[0]", "o").replaceAll("[,.\\ ]", "").toLowerCase();
-        str = str.replaceAll("[^0-9A-Za-z()\\[]+]", "");
+        str = arguments.get("str").toString();
         input_text.setText(str);
 
         View.OnClickListener solveTask = new View.OnClickListener() {
@@ -62,8 +51,6 @@ public class CalculatorActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 input = input_text.getText().toString(); //ввод
-                input = input.replaceAll("[,.\\ ]", "");
-                input = input.replaceAll("[0]", "o");
                 SolutionChemicalEquations test = new SolutionChemicalEquations(input.split("\\+"), getApplicationContext()); // соединения
                 String output = "";
                 for (Equation eq : test.getSolutionEquations()) {
