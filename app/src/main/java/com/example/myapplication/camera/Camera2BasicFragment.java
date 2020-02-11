@@ -99,13 +99,9 @@ import java.util.concurrent.TimeUnit;
 
 public class Camera2BasicFragment extends Fragment
         implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
-
-    private static final int RESULT_OK = 1;
-    TextView textView;
     String str;
-
-    SurfaceView surfaceView;
-    SurfaceHolder mHolder;
+    boolean IS_IMAGE_PROCESS = false;
+    boolean IS_ACTIVITY_PROCESS = true;
     /**
      * Conversion from screen rotation to JPEG orientation.
      */
@@ -609,6 +605,7 @@ public class Camera2BasicFragment extends Fragment
         } else {
             mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
         }
+        IS_ACTIVITY_PROCESS = true;
     }
 
     @Override
@@ -1054,16 +1051,21 @@ public class Camera2BasicFragment extends Fragment
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.picture: {
-                takePicture();
-                break;
-            }
-            case R.id.calculate: {
-                Intent intent = new Intent(getActivity().getApplicationContext(), CalculatorActivity.class);
-                intent.putExtra("str", str);
-                startActivity(intent);
-                break;
+        if (!IS_IMAGE_PROCESS) {
+            switch (view.getId()) {
+                case R.id.picture: {
+                    takePicture();
+                    break;
+                }
+                case R.id.calculate: {
+                    if (IS_ACTIVITY_PROCESS) {
+                        IS_ACTIVITY_PROCESS = false;
+                        Intent intent = new Intent(getActivity().getApplicationContext(), CalculatorActivity.class);
+                        intent.putExtra("str", str);
+                        startActivity(intent);
+                        break;
+                    }
+                }
             }
         }
     }
@@ -1121,6 +1123,12 @@ public class Camera2BasicFragment extends Fragment
         @Override
         protected void onPostExecute(String result) {
             str = result;
+            IS_IMAGE_PROCESS = false;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            IS_IMAGE_PROCESS = true;
         }
     }
 
