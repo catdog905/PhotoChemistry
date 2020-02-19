@@ -16,74 +16,41 @@ public class SolutionChemicalEquations {
     private static final String TAG = "MyApp";
     List<Equation> SolutionEquations;
 
-    public SolutionChemicalEquations(String[] input, Context context) {
-        //for (int i = 0; i < input.length; i++){
-            //Log.i(TAG, "!" + input[i]);
-        //}
-        List<Integer> inputInt = CompoundToInt(input, (new DbCursors(context)).getCursor("compound")); // id соединений
+    public SolutionChemicalEquations(String[] input, Context context, DbCursors db) {
+        List<Integer> inputInt = CompoundToInt(input, db.getCursor("compound")); // id соединений
         List<Compound> inputCompounds = new ArrayList<Compound>(); // объекты соединений
         for (Integer s: inputInt) {
-            inputCompounds.add(new Compound(s, context));
+            inputCompounds.add(new Compound(s, context, db));
          }
-        List<Equation> possibleEquations = PossibleEquations(inputCompounds, context);
-        //Log.i(TAG,  possibleEquations.size() + "");
-        for (Equation eq : possibleEquations) {
-            for (Integer el: eq.getRight()) {
-                //Log.i(TAG,  Integer.toString(el));
-            }
-            //Log.i(TAG,  "+");
-        }
-        SolutionEquations = possibleEquations;
-    }
-
-    public List<Equation> PossibleEquations (List<Compound> left, Context context) {
-        //Log.i(TAG,  left.size() + "");
-        //for (Compound el:left) {
-        //    Log.i(TAG,  el.id + "");
-        //}
-        List<Integer> leftId = new ArrayList<>();
-        for (Compound s : left) {
-            leftId.add(s.id);
-        }
-        Cursor cursor = (new DbCursors(context)).getCursor("equation");
-
         List<Equation> possibleEquations = new ArrayList<>();
-
+        SolutionEquations = possibleEquations;
+        Cursor cursor = db.getFindEqCursor("equations", inputCompounds);
         cursor.moveToFirst();
         do {
-            List<Integer> leftHelp = new ArrayList<>(leftId);
-            List<String> listTempStr = Arrays.asList((cursor.getString(cursor.getColumnIndex("left"))).split("-")); // _id
-            List<Integer> listTempInt = new ArrayList<>();
-            Integer TempInt;
-            for (String s : listTempStr) {
-                Log.i(TAG, leftId.get(0) + "");
-                TempInt = Integer.parseInt(s);
-                //if (cursor.getInt(cursor.getColumnIndex("_id")) < 10) Log.i(TAG, TempInt + "+" + leftHelp.get(0) + "+" + cursor.getString(cursor.getColumnIndex("_id")));
-                if (leftHelp.contains(TempInt)) {
-                    //Log.i(TAG, "help");
-                    leftHelp.remove(leftHelp.indexOf(TempInt));
-                }
-                listTempInt.add(TempInt);
+            List<Integer> intLeft = new ArrayList<>();
+            List<Integer> intRight = new ArrayList<>();
+            List<Integer> balance_left = new ArrayList<>();
+            List<Integer> balance_right = new ArrayList<>();
+            for (String s : cursor.getString(cursor.getColumnIndex("left")).split("-")) {
+                intLeft.add(Integer.valueOf(s));
             }
-
-            if (leftHelp.isEmpty()) {
-                //Log.i(TAG, "+");
-                List<String> listTempStrRight = Arrays.asList((cursor.getString(cursor.getColumnIndex("right"))).split("-")); // _id
-                List<Integer> listTempIntRight = new ArrayList<>();
-                for (String s : listTempStrRight) {
-                    listTempIntRight.add(Integer.parseInt(s));
-                    //Log.i(TAG, s);
-                }
-                Equation tempEquation = new Equation(cursor.getInt(cursor.getColumnIndex("_id")), cursor.getInt(cursor.getColumnIndex("frequency")),
-                        leftId, listTempIntRight);
-                possibleEquations.add(tempEquation);
-                //break;
+            for (String s : cursor.getString(cursor.getColumnIndex("right")).split("-")) {
+                intRight.add(Integer.valueOf(s));
             }
+            try {
+                //Log.d("help", cursor.getString(cursor.getColumnIndex("_id")));
+                for (String s : cursor.getString(cursor.getColumnIndex("balance_left")).split("-")) {
+                    balance_left.add(Integer.valueOf(s));
+                }
+                for (String s : cursor.getString(cursor.getColumnIndex("balance_right")).split("-")) {
+                    balance_right.add(Integer.valueOf(s));
+                }
+            } catch (Exception e){};
 
+            Equation tempEquation = new Equation(cursor.getInt(cursor.getColumnIndex("_id")), cursor.getInt(cursor.getColumnIndex("frequency")),
+                    intLeft, intRight, balance_left, balance_right);
+            possibleEquations.add(tempEquation);
         } while (cursor.moveToNext());
-        Collections.sort(possibleEquations, new FrequencyComp());
-        Log.i(TAG,  possibleEquations.size() + "");
-        return possibleEquations;
     }
 
     class FrequencyComp implements Comparator<Equation> {
@@ -119,13 +86,13 @@ public class SolutionChemicalEquations {
         return inputInt;
     }
 
-    public String IntToCompound (Integer id, Cursor cursor) {
-        cursor.moveToFirst();
-        do {
-            if (cursor.getInt(cursor.getColumnIndex("_id")) == id) {
-                return cursor.getString(cursor.getColumnIndex("formula"));
-            }
-        } while (cursor.moveToNext());
+    public String IntToCompound (Integer id, Cursor cursor, DbCursors cursors) {
+
+        Cursor c = cursors.getIdCursor("compound", id);
+        if (c != null) {
+            c.moveToFirst();
+            return c.getString(c.getColumnIndex("formula"));
+        }
         return null;
     }
 }

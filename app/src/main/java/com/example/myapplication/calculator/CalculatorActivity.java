@@ -19,6 +19,7 @@ import com.example.myapplication.helpers.DbCursors;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CalculatorActivity extends AppCompatActivity {
     String TAG_EQUATION = "100";
@@ -31,6 +32,7 @@ public class CalculatorActivity extends AppCompatActivity {
     String input;
     String str = "";
     String mFile;
+    DbCursors db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +42,7 @@ public class CalculatorActivity extends AppCompatActivity {
         input_text = findViewById(R.id.input);
         output_text = findViewById(R.id.output);
         solve_button = findViewById(R.id.solve_button);
+        db = new DbCursors(getApplicationContext());
         //image_button = findViewById(R.id.image_button);
 
         Bundle arguments = getIntent().getExtras();
@@ -51,18 +54,23 @@ public class CalculatorActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 input = input_text.getText().toString(); //ввод
-                SolutionChemicalEquations test = new SolutionChemicalEquations(input.split("\\+"), getApplicationContext()); // соединения
+                SolutionChemicalEquations test = new SolutionChemicalEquations(input.split("\\+"), getApplicationContext(), db); // соединения
                 String output = "";
                 for (Equation eq : test.getSolutionEquations()) {
                     //output += eq.id + ": ";
-                    for (Integer el: eq.getRight()) {
-                        output += test.IntToCompound(el, (new DbCursors(getApplicationContext())).getCursor("compound")) + " ";
+                    List<Integer> el = eq.getRight();
+                    for (int i = 0; i < el.size(); i++) {
+                        try {
+                            output += eq.balance_right.get(i) + test.IntToCompound(el.get(i), db.getCursor("compound"), db) + " ";
+                        }catch(Exception e){
+                            output += test.IntToCompound(el.get(i), db.getCursor("compound"), db) + " ";
+                        }
                         //Log.i(TAG, el + " " + "+");
                     }
                     //output += " :" + eq.frequency;
-                   // output += "\n";
+                    output += "\n";
                     //Log.i(TAG, (eq.getRight()).size() + "");
-                    break;
+                    //break;
                 }
                 output_text.setText(output);
             }
