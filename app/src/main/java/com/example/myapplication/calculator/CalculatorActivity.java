@@ -58,7 +58,7 @@ public class CalculatorActivity extends AppCompatActivity {
                 String output = "";
                 for (Equation eq : test.getSolutionEquations()) {
                     //output += eq.id + ": ";
-                    List<Integer> el = eq.getRight();
+                    List<Integer> el = eq.getLeft();
                     for (int i = 0; i < el.size(); i++) {
                         try {
                             output += eq.balance_right.get(i) + test.IntToCompound(el.get(i), db.getCursor("compound"), db) + " ";
@@ -67,7 +67,17 @@ public class CalculatorActivity extends AppCompatActivity {
                         }
                         //Log.i(TAG, el + " " + "+");
                     }
-                    //output += " :" + eq.frequency;
+                    output += "---> ";
+                    el = eq.getRight();
+                    for (int i = 0; i < el.size(); i++) {
+                        try {
+                            output += eq.balance_right.get(i) + test.IntToCompound(el.get(i), db.getCursor("compound"), db) + " ";
+                        }catch(Exception e){
+                            output += test.IntToCompound(el.get(i), db.getCursor("compound"), db) + " ";
+                        }
+                        //Log.i(TAG, el + " " + "+");
+                    }
+                    output += " :" + eq.frequency;
                     output += "\n";
                     //Log.i(TAG, (eq.getRight()).size() + "");
                     //break;

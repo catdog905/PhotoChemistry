@@ -1217,6 +1217,7 @@ public class Camera2BasicFragment extends Fragment
             this.y1 = y1;
             this.x2 = x2;
             this.y2 = y2;
+            relativeLayout.addView(this);
         }
 
         @Override
@@ -1237,13 +1238,12 @@ public class Camera2BasicFragment extends Fragment
         }
         public void render_rect(float dx, float dy){ //float scale){
             Log.d("DEBUG", "X: " + mPosX + " Y: " + mPosY + " Scale: " + mScaleFactor);
-            relativeLayout.removeAllViews();
             //relativeLayout.addView(new Rectangle(getActivity(), (int)(base_x - base_len_x*scale),(int)(base_y - base_len_y*scale), (int)(base_x + base_len_x*scale), (int)(base_y + base_len_y*scale)));
             x1 = (x1 - dx);
             y1 = (y1 - dy);
             x2 = (x2 + dx);
             y2 = (y2 + dy);
-            relativeLayout.addView(new Rectangle(getActivity(), (int)x1, (int)y1, (int)x2, (int)y2));
+            invalidate();
         }
     }
 

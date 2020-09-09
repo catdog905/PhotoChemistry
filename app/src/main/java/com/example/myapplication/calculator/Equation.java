@@ -27,6 +27,10 @@ public class Equation {
         return right;
     }
 
+    public List<Integer> getLeft() {
+        return left;
+    }
+
     public List<Integer> getRightBalance() {
         return balance_right;
     }
