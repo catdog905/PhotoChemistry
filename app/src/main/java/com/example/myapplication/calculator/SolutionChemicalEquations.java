@@ -72,11 +72,13 @@ public class SolutionChemicalEquations {
     private List<Integer> CompoundToInt (String[] input, Cursor cursor) {
         List<Integer> inputInt= new ArrayList<>();
         for (String s:input) {
+            s = s.replace(" ", "");
             cursor.moveToFirst();
             do {
-                if (cursor.getInt(cursor.getColumnIndex("_id")) < 10) {
+                if (cursor.getInt(cursor.getColumnIndex("_id")) == 100) {
                     Log.i(TAG, cursor.getString(cursor.getColumnIndex("formula")).toLowerCase() + " + " + s.toLowerCase() + " + " + cursor.getString(cursor.getColumnIndex("formula")).equalsIgnoreCase(s));
                 }
+                String str = cursor.getString(cursor.getColumnIndex("formula")).toLowerCase() + " + " + s.toLowerCase() + " + " + cursor.getString(cursor.getColumnIndex("formula")).equalsIgnoreCase(s);
                 if (cursor.getString(cursor.getColumnIndex("formula")).equalsIgnoreCase(s)) {
                     inputInt.add(cursor.getInt(cursor.getColumnIndex("_id")));
                     break;

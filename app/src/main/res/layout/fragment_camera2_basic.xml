@@ -12,6 +12,16 @@
         android:layout_alignParentTop="true"
         android:layout_marginStart="0dp" />
 
+    <EditText
+        android:id="@+id/input_field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:text="Al + O2"
+        android:textSize="15sp"
+        android:padding="10dp"
+        android:textAlignment="center" />
+
     <ImageButton
         android:id="@+id/calculate"
         android:layout_width="32dp"

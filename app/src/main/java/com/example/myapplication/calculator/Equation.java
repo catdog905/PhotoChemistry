@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Equation {
-    int id, frequency;
-    List<Integer> left;
-    List<Integer> right;
-    List<Integer> balance_left;
-    List<Integer> balance_right;
+    public int id, frequency;
+    public List<Integer> left;
+    public List<Integer> right;
+    public List<Integer> balance_left;
+    public List<Integer> balance_right;
 
     public Equation(int id, int frequency, List<Integer> left, List<Integer> right, List<Integer> balance_left, List<Integer> balance_right) {
         this.id = id;
