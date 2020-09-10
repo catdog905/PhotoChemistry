@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -14,46 +14,59 @@
         android:background="@null"
         android:src="@drawable/go_back_button_red_colour"
         android:scaleType="fitCenter"
-        android:layout_margin="15dp"/>
+        android:layout_margin="15dp" />
 
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:context=".calculator.OutputEquationActivity"
-        tools:showIn="@layout/activity_output_equation">
+        tools:showIn="@layout/activity_output_equation"
+        android:layout_below="@+id/back_button">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:background="@drawable/output_content_background"
+            android:layout_marginStart="40dp"
+            android:layout_marginBottom="50dp"
+            android:layout_marginEnd="40dp">
 
             <TextView
                 android:id="@+id/output_equation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="50dp"
-                android:layout_marginStart="50dp"
-                android:layout_marginEnd="50dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:layout_gravity="center"
-                android:background="#D08D8D"
+                android:background="@drawable/output_equation_background"
                 android:padding="10dp"
-                android:text="3 O2 (g) + 4 NH3 (g) → 6 H2O (l) + 2 N2 (g)"
+                android:text="3 O2 + 4 NH3 → 6 H2O + 2 N2"
                 android:textSize="15sp"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/output_recycler_view"
+                android:scrollbars="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"/>
 
             <TextView
                 android:id="@+id/output_info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:layout_marginStart="50dp"
-                android:layout_marginEnd="50dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:layout_gravity="center"
                 android:padding="10dp"
-                android:text="@string/large_text"
+                android:textColor="#8b2626"
+                android:text="Это окислительно-восстановительная (редокс) реакция:\n4 N-III - 12 e- → 4 N0 (окисление)\n6 O0 + 12 e- → 6 O-II (восстановле́ние)\nNH3 является восстановителем, O2 является окислителем."
                 android:textSize="15sp"/>
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>
 
-</android.support.design.widget.CoordinatorLayout>
+</RelativeLayout>
