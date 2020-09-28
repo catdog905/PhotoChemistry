@@ -32,10 +32,7 @@ import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PixelFormat;
 import android.graphics.Point;
-import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
@@ -57,12 +54,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -71,23 +66,19 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.myapplication.calculator.OutputEquationActivity;
 import com.example.myapplication.R;
-import com.example.myapplication.calculator.CalculatorActivity;
 
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,7 +90,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Camera2BasicFragment extends Fragment
         implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
-    String str;
+    EditText inputFieldEditText;
     boolean IS_IMAGE_PROCESS = false;
     boolean IS_ACTIVITY_PROCESS = true;
     /**
@@ -493,6 +484,7 @@ public class Camera2BasicFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_camera2_basic, container, false);
+        inputFieldEditText = view.findViewById(R.id.input_field);
         //mScaleDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
         view.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent ev) {
@@ -1060,8 +1052,8 @@ public class Camera2BasicFragment extends Fragment
                 case R.id.calculate: {
                     if (IS_ACTIVITY_PROCESS) {
                         IS_ACTIVITY_PROCESS = false;
-                        Intent intent = new Intent(getActivity().getApplicationContext(), CalculatorActivity.class);
-                        intent.putExtra("str", str);
+                        Intent intent = new Intent(getActivity().getApplicationContext(), OutputEquationActivity.class);
+                        intent.putExtra("str", inputFieldEditText.getText().toString());
                         startActivity(intent);
                         break;
                     }
@@ -1122,7 +1114,7 @@ public class Camera2BasicFragment extends Fragment
 
         @Override
         protected void onPostExecute(String result) {
-            str = result;
+            inputFieldEditText.setText(result);
             IS_IMAGE_PROCESS = false;
         }
 
@@ -1217,6 +1209,7 @@ public class Camera2BasicFragment extends Fragment
             this.y1 = y1;
             this.x2 = x2;
             this.y2 = y2;
+            relativeLayout.addView(this);
         }
 
         @Override
@@ -1237,13 +1230,12 @@ public class Camera2BasicFragment extends Fragment
         }
         public void render_rect(float dx, float dy){ //float scale){
             Log.d("DEBUG", "X: " + mPosX + " Y: " + mPosY + " Scale: " + mScaleFactor);
-            relativeLayout.removeAllViews();
             //relativeLayout.addView(new Rectangle(getActivity(), (int)(base_x - base_len_x*scale),(int)(base_y - base_len_y*scale), (int)(base_x + base_len_x*scale), (int)(base_y + base_len_y*scale)));
             x1 = (x1 - dx);
             y1 = (y1 - dy);
             x2 = (x2 + dx);
             y2 = (y2 + dy);
-            relativeLayout.addView(new Rectangle(getActivity(), (int)x1, (int)y1, (int)x2, (int)y2));
+            invalidate();
         }
     }
 

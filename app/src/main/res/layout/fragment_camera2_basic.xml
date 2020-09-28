@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/relative_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -11,47 +12,38 @@
         android:layout_alignParentTop="true"
         android:layout_marginStart="0dp" />
 
-    <!---<SurfaceView
+    <EditText
+        android:id="@+id/input_field"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/surfaceView"/>-->
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:text="Al + O2"
+        android:textSize="15sp"
+        android:padding="10dp"
+        android:textAlignment="center" />
 
-    <FrameLayout
-        android:id="@+id/control"
-        android:layout_width="match_parent"
-        android:layout_height="112dp"
-        android:layout_alignParentStart="true"
+    <ImageButton
+        android:id="@+id/calculate"
+        android:layout_width="32dp"
+        android:layout_height="48dp"
         android:layout_alignParentBottom="true"
-        android:background="@color/common_google_signin_btn_text_light_disabled">
+        android:layout_marginStart="50dp"
+        android:layout_marginBottom="50dp"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:src="@drawable/calculate_button"
+        android:text="solve" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/calculate"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center|right"
-                android:text="solve" />
-
-            <Button
-                android:id="@+id/picture"
-                android:layout_width="324dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="bottom|center"
-                android:text="@string/picture" />
-
-        </LinearLayout>
-
-    </FrameLayout>
-
-    <RelativeLayout
-        android:id="@+id/relative_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </RelativeLayout>
+    <ImageButton
+        android:id="@+id/picture"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="77dp"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:src="@drawable/take_photo_button"
+        android:text="@string/picture" />
 
 </RelativeLayout>

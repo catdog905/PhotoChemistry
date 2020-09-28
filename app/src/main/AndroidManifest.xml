@@ -3,16 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.myapplication">
 
-
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <uses-feature
         android:name="android.hardware.camera.any"
         android:required="true" />
     <uses-feature
         android:name="android.hardware.camera.autofocus"
         android:required="false" />
-
 
     <application
         android:allowBackup="true"
@@ -21,6 +20,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity
+            android:name=".calculator.OutputEquationActivity"
+            android:label="@string/title_activity_output_equation"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".calculator.CalculatorActivity" />
         <activity android:name=".camera.CameraActivity">
             <intent-filter>
@@ -40,7 +43,5 @@
                 android:resource="@xml/provider_paths" />
         </provider>
     </application>
-
-
 
 </manifest>
